@@ -1,6 +1,6 @@
 #include "point.h"
-
-using namespace std;
+#include <stdio.h>
+#include <stdlib.h>
 
 Coordinate::Coordinate()
 {
@@ -102,4 +102,115 @@ int Point::test_shape()
 		return -3;
 
 	return 1;
+}
+
+int point_finder(unsigned char* working_green, int (*center_points)[2], int length)
+{
+	// point finder variables
+	int left, right;
+	const int threshold_C = 10;
+	Point points[length];
+	const int unused_C = 0;
+	const int active_C = 1;
+	const int consemated_C = 2;
+	const int bad_C = -1;
+	int point_status[length];
+	int left_point = 0;
+	int right_point = -1;
+	int num_centers = 0;
+
+	// point finder algorithm
+	left = right = -1;
+	for(int i=0; i<NUM_PIXELS; i++)
+	{
+		if(*(working_green+i) > threshold_C)
+		{
+			if(left == -1) // new line
+			{
+				left = right = i;
+			}
+			else
+			{
+				right = i;
+			}
+		} else if(left != -1) {
+			bool found = false;
+			for(int j=left_point; j<=right_point;j++)
+			{
+				if(point_status[j] == active_C)
+				{
+					int test = points[j].test_point(left);
+					if(test == 1)
+					{
+						points[j].add_line(left,right);
+						found = true;
+						break;
+					} else if (test == -1) {
+						// point should be consemated
+						if(j == left_point)
+							left_point++;
+						point_status[j] = consemated_C;
+					}
+				}
+			}
+			if(!found)
+			{
+				right_point++;
+				point_status[right_point] = active_C;
+				points[right_point].add_line(left, right);
+			}
+			left = -1;
+		}
+	}
+	for(int i = left_point; i <= right_point; i++)
+		point_status[i] = consemated_C;
+	for(int i = 0; i < 100 && point_status[i] != unused_C; i++)
+	{	
+		int* center = points[i].get_center();
+		int test = points[i].test_shape();
+		if(test < 0) // bad
+		{
+			point_status[i] = bad_C;
+			printf("%d(%d): (%d,%d) - bad (%d)\n", i, point_status[i], *center, *(center+1), test);
+			continue;
+		} else {
+			center_points[num_centers][0] = *center;
+			center_points[num_centers][1] = *(center+1);
+			num_centers++;
+		}
+		//printf("%d(%d): (%d,%d)\n", i, point_status[i], *center, *(center+1));
+	}
+
+#ifdef DEBUG_FILE
+	FILE *f = fopen("working.txt", "w");
+	if (f == NULL)
+	{
+		printf("Error opening file!\n");
+		exit(1);
+	}
+
+	fprintf(f, "/* green values only, 640 x 480 pix */ \n\n");
+	for(int i=1; i < (NUM_PIXELS); i++)
+	{
+		bool center = false;
+		if(i != 0 && (i-1)%(WIDTH) == 0)
+			fprintf(f, "\n");
+		for(int j = 0; j < num_centers; j++)
+		{
+			if(XVAL(i) == center_points[j][0] && YVAL(i) == center_points[j][1])
+			{
+				fprintf(f, "XXX,");
+				center = true;
+				break;
+			}
+		}
+		if(!center)
+			fprintf(f,"%3d,",*(working_green+i));
+		center = false;
+	}
+
+	fclose(f);
+#endif
+	
+	return num_centers;
 }

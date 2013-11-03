@@ -1,8 +1,11 @@
 #ifndef POINT_H
 #define POINT_H
 
+#define DEBUG_FILE
+
 #define WIDTH	640
 #define HEIGHT	480
+#define NUM_PIXELS	(WIDTH*HEIGHT)
 
 #define XVAL(idx)	(idx%WIDTH)
 #define YVAL(idx)	(idx/WIDTH)
@@ -36,5 +39,12 @@ public:
 	int test_point(int index); // x-failure: 0, y-falure: -1, new point and success = 1
 	int test_shape(); // 
 };
+
+/** point finder
+takes the working green array, finds center points
+
+returns number of center points
+*/
+int point_finder(unsigned char* working_green, int (*center_points)[2], int length);
 
 #endif //POINT_H
