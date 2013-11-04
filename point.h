@@ -18,15 +18,6 @@
 
 #define COL_THRESHOLD	20	// threshold for being in the same column
 
-class Coordinate {
-public:
-	int x;
-	int y;
-	Coordinate();
-	Coordinate(long index);
-	void set(long index); // calculates the x,y values from the coordinates
-};
-
 class Point {
 private:
 	int min[2];

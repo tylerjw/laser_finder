@@ -2,23 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-Coordinate::Coordinate()
-{
-	x = -1; // not initialized
-	y = -1;
-}
-
-Coordinate::Coordinate(long index)
-{
-	set(index);
-}
-
-void Coordinate::set(long index)
-{
-	y = index / WIDTH;
-	x = index % WIDTH;
-}
-
 Point::Point()
 {
 	for(int i=0; i < 2; i++)
